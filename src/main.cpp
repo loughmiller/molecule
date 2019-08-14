@@ -18,7 +18,7 @@
 #define MODE_SHAPE 2
 
 #define SATURATION 244
-#define VALUE 100
+#define VALUE 150
 
 
 // FUNCTION DECS
@@ -142,7 +142,11 @@ CHSV white(int_fast16_t x, int_fast16_t y) {
 }
 
 CHSV rainbow(int_fast16_t x, int_fast16_t y) {
-  return CHSV((((hueOffset + y) / 10) * 60) % 256, SATURATION, VALUE);
+  if ((int_fast16_t)(x/1.9 + y/1.9) % 256 == hueOffset) {
+    return CHSV(0, 0, 255);  
+  }
+
+  return CHSV((hueOffset + y) % 256, SATURATION, VALUE);
 }
 
 void displayShape() {
@@ -150,7 +154,7 @@ void displayShape() {
   // diagonal1->display(leds, rainbow);
   circle->display(leds, rainbow);
 
-  hueOffset = (currentTime / 100) % 256;
+  hueOffset = (currentTime / 20) % 256;
 }
 
 void displayChase() {

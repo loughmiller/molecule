@@ -13,16 +13,22 @@ Circle::Circle(float radius,
 void Circle::setPosition(float x, float y) {
   this->x = x;
   this->y = y;
-}
 
-void Circle::display(CRGB* leds, CHSV (*getColor)(int_fast16_t x, int_fast16_t y)) {
-  float radianDelta = (2.0 * PI) / ledCount;
+  // precalculate x and y positions of each LED for speed!!
+  float radianDelta = (2.0 * PI) / this->ledCount;
   for (uint_fast16_t i = 0; i < this->ledCount; i++) {
     float radians = radianDelta * i + this->startOffsetRadians;
     int_fast16_t x = (int_fast16_t) ((this->x + (this->radius * cos(radians))) * LEDS_PER_INCH);
     int_fast16_t y = (int_fast16_t) ((this->y + (this->radius * sin(radians))) * LEDS_PER_INCH);
-    
-    leds[this->ledOffset + i] = getColor(x, y);
+    this->xPositions[i] = x;
+    this->yPositions[i] = y;
+  }
+
+}
+
+void Circle::display(CRGB* leds, CHSV (*getColor)(int_fast16_t x, int_fast16_t y)) {
+  for (uint_fast16_t i = 0; i < this->ledCount; i++) {
+    leds[this->ledOffset + i] = getColor(this->xPositions[i], this->yPositions[i]);
   }
 }
 

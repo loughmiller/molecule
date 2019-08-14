@@ -13,6 +13,8 @@ class Circle {
     float startOffsetRadians;
     uint_fast16_t ledCount;
     uint_fast16_t ledOffset;
+    uint_fast16_t xPositions[200];
+    uint_fast16_t yPositions[200];
 
   public :
     Circle(float radius,
