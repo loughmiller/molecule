@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include <math.h>
 #include "Segment.h"
+#include "Circle.h"
 
 #define NUM_LEDS 288
 #define DISPLAY_LED_PIN 22
@@ -36,6 +37,7 @@ uint_fast32_t currentTime = 0;
 
 Segment * vertical1;
 Segment * diagonal1;
+Circle * circle;
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP
@@ -63,8 +65,11 @@ void setup() {
   vertical1 = new Segment(39.4, 0, 144);
   vertical1->setPosition(40, 0, 90);
 
-  diagonal1 = new Segment(39.4, 144, 144);
-  diagonal1->setRelativePosition(vertical1, 135);
+  // diagonal1 = new Segment(39.4, 144, 144);
+  // diagonal1->setRelativePosition(vertical1, 135);
+
+  circle = new Circle(6.27, 90, 144, 144);
+  circle->setPosition(40, 39.4 - 6.27);
 
   // ONE SECOND ALL-GREEN ALL-CLEAR  
   for (uint_fast16_t i = 0; i < NUM_LEDS; i++) {
@@ -81,13 +86,13 @@ void setup() {
 
   Serial.println("setup complete");
 
-  Serial.print(diagonal1->getStartX());
-  Serial.print(", ");
-  Serial.print(diagonal1->getStartY());
-  Serial.print(" - ");
-  Serial.print(diagonal1->getEndX());
-  Serial.print(", ");
-  Serial.println(diagonal1->getEndY());
+  // Serial.print(diagonal1->getStartX());
+  // Serial.print(", ");
+  // Serial.print(diagonal1->getStartY());
+  // Serial.print(" - ");
+  // Serial.print(diagonal1->getEndX());
+  // Serial.print(", ");
+  // Serial.println(diagonal1->getEndY());
 
   setupTime = millis();
 }
@@ -142,7 +147,8 @@ CHSV rainbow(int_fast16_t x, int_fast16_t y) {
 
 void displayShape() {
   vertical1->display(leds, rainbow);
-  diagonal1->display(leds, rainbow);
+  // diagonal1->display(leds, rainbow);
+  circle->display(leds, rainbow);
 
   hueOffset = (currentTime / 100) % 256;
 }
