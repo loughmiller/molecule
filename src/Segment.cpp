@@ -1,7 +1,7 @@
 #include "Segment.h"
 
-Segment::Segment(float length, 
-                 uint_fast16_t ledOffset, 
+Segment::Segment(float length,
+                 uint_fast16_t ledOffset,
                  uint_fast16_t ledCount) {
   this->length = length;
   this->ledOffset = ledOffset;
@@ -29,7 +29,7 @@ void Segment::display(CRGB* leds, CHSV (*getColor)(int_fast16_t x, int_fast16_t 
   float yDelta = (this->endY - this->startY) / this->ledCount;
   float x = this->startX + (xDelta / 2);
   float y = this->startY + (yDelta / 2);
-  
+
   for (uint_fast16_t i = 0; i < this->ledCount; i++) {
     int_fast16_t xL = (int_fast16_t) (LEDS_PER_INCH * x);
     int_fast16_t yL = (int_fast16_t) (LEDS_PER_INCH * y);
@@ -66,4 +66,12 @@ float Segment::getEndX() {
 
 float Segment::getEndY() {
   return this->endY;
+}
+
+uint_fast16_t Segment::getMaxXLED() {
+  return max((int_fast16_t) this->startX * LEDS_PER_INCH, (int_fast16_t) this->endX * LEDS_PER_INCH);
+}
+
+uint_fast16_t Segment::getMinXLED() {
+  return min((int_fast16_t) this->startX * LEDS_PER_INCH, (int_fast16_t) this->endX * LEDS_PER_INCH);
 }

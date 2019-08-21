@@ -2,7 +2,7 @@
 
 Circle::Circle(float radius,
                uint_fast16_t startDegrees,
-               uint_fast16_t ledOffset, 
+               uint_fast16_t ledOffset,
                uint_fast16_t ledCount) {
   this->radius = radius;
   this->startOffsetRadians = startDegrees * RADIANS_PER_DEGREE;
@@ -42,4 +42,22 @@ float Circle::getY() {
 
 float Circle::getRadius() {
   return this->radius;
+}
+
+uint_fast16_t Circle::getMaxXLED() {
+  uint_fast16_t maxX = 0;
+  for (uint_fast16_t i = 0; i < this->ledCount; i++) {
+    maxX = max(maxX, this->xPositions[i]);
+  }
+
+  return maxX;
+}
+
+uint_fast16_t Circle::getMinXLED() {
+  uint_fast16_t minX = -1;
+  for (uint_fast16_t i = 0; i < this->ledCount; i++) {
+    minX = min(minX, this->xPositions[i]);
+  }
+
+  return minX;
 }

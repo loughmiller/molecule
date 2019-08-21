@@ -17,8 +17,8 @@ class Segment{
     void validate();
 
   public :
-    Segment(float length, 
-                 uint_fast16_t ledOffset, 
+    Segment(float length,
+                 uint_fast16_t ledOffset,
                  uint_fast16_t ledCount);
     void setPosition(float startX, float startY, int_fast16_t absoluteAngle);
     void setRelativePosition(Segment *parent, int_fast16_t relativeAngle);
@@ -30,4 +30,6 @@ class Segment{
     float getEndY();
     float calcEndX();
     float calcEndY();
+    uint_fast16_t getMaxXLED();
+    uint_fast16_t getMinXLED();
 };
