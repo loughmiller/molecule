@@ -3,11 +3,13 @@
 Circle::Circle(float radius,
                uint_fast16_t startDegrees,
                uint_fast16_t ledOffset,
-               uint_fast16_t ledCount) {
+               uint_fast16_t ledCount,
+               float arcPercent) {
   this->radius = radius;
   this->startOffsetRadians = startDegrees * RADIANS_PER_DEGREE;
   this->ledOffset = ledOffset;
   this->ledCount = ledCount;
+  this->arcPercent = arcPercent;
 }
 
 void Circle::setPosition(float x, float y) {
@@ -15,7 +17,7 @@ void Circle::setPosition(float x, float y) {
   this->y = y;
 
   // precalculate x and y positions of each LED for speed!!
-  float radianDelta = (2.0 * PI) / this->ledCount;
+  float radianDelta = (2.0 * PI * this->arcPercent) / this->ledCount;
   for (uint_fast16_t i = 0; i < this->ledCount; i++) {
     float radians = radianDelta * i + this->startOffsetRadians;
     int_fast16_t x = (int_fast16_t) ((this->x + (this->radius * cos(radians))) * LEDS_PER_INCH);
@@ -23,7 +25,6 @@ void Circle::setPosition(float x, float y) {
     this->xPositions[i] = x;
     this->yPositions[i] = y;
   }
-
 }
 
 void Circle::display(CRGB* leds, CHSV (*getColor)(int_fast16_t x, int_fast16_t y)) {

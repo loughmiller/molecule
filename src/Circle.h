@@ -13,6 +13,7 @@ class Circle {
     float startOffsetRadians;
     uint_fast16_t ledCount;
     uint_fast16_t ledOffset;
+    float arcPercent;
     uint_fast16_t xPositions[200];
     uint_fast16_t yPositions[200];
 
@@ -20,7 +21,8 @@ class Circle {
     Circle(float radius,
                uint_fast16_t startDegrees,
                uint_fast16_t ledOffset,
-               uint_fast16_t ledCount);
+               uint_fast16_t ledCount,
+               float arcPercent);
     void setPosition(float x, float y);
     void display(CRGB* leds, CHSV (*getColor)(int_fast16_t x, int_fast16_t y));
     float getX();

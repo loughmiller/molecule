@@ -20,8 +20,8 @@ class Segment{
     Segment(float length,
                  uint_fast16_t ledOffset,
                  uint_fast16_t ledCount);
-    void setPosition(float startX, float startY, int_fast16_t absoluteAngle);
-    void setRelativePosition(Segment *parent, int_fast16_t relativeAngle);
+    void setPosition(float startX, float startY, int_fast16_t absoluteAngle, bool reverse);
+    void setRelativePosition(Segment *parent, int_fast16_t relativeAngle, bool reverse);
     void display(CRGB* leds, CHSV (*getColor)(int_fast16_t x, int_fast16_t y));
     float getStartX();
     float getStartY();

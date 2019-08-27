@@ -9,32 +9,39 @@
 #include "Segment.h"
 #include "Circle.h"
 
-#define NUM_LEDS 288
+#define NUM_LEDS 2550
 #define DISPLAY_LED_PIN 22
 #define AUDIO_INPUT_PIN A14
 #define CONTROL_MODE 17
 #define CONTROL_UP 16
 #define CONTROL_DOWN 15
 
-#define MODES 3
+#define MODES 5
 #define MODE_COUNT 0
 #define MODE_CHASE 1
 #define MODE_SHAPE 2
 #define MODE_SPECTRUM 3
+#define MODE_GRID 4
 
 #define SATURATION 244
-#define VALUE 150
+#define VALUE 255
 
+#define LEVEL 0
+#define NUM_CIRCLES 4
+#define NUM_SEGMENTS 30
 
 // FUNCTION DECS
 void displayCount();
 void displayChase();
 void displayShape();
 void displaySpectrum();
+void displayGrid();
 
+void displayAll(CRGB* leds, CHSV (*getColor)(int_fast16_t x, int_fast16_t y));
 // GLOBALS
 CRGB leds[NUM_LEDS];
-uint_fast8_t currentMode = 2;
+uint_fast8_t currentMode = MODE_SHAPE;
+// uint_fast8_t currentMode = MODE_CHASE;
 uint8_t hueOffset = 0;
 uint_fast32_t loops = 0;
 uint_fast32_t setupTime = 0;
@@ -43,9 +50,9 @@ uint_fast32_t currentTime = 0;
 uint_fast16_t maxX = 0;
 uint_fast16_t minX = -1;
 
-Segment * vertical1;
-Segment * diagonal1;
-Circle * circle;
+Segment * segment[NUM_SEGMENTS];
+Segment * virtualSegment[100];
+Circle * circle[NUM_CIRCLES];
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // NOTE DETECTION
@@ -105,27 +112,202 @@ void setup() {
   }
   FastLED.show();
 
-  // SETUP SEGMENTS
-  vertical1 = new Segment(39.4, 0, 144);
-  vertical1->setPosition(40, 0, 90);
 
-  // diagonal1 = new Segment(39.4, 144, 144);
-  // diagonal1->setRelativePosition(vertical1, 135);
+  // segment[0] = new Segment(19, 1688, 71);
+  // segment[0]->setPosition(4, 97.5, 0 + LEVEL);  // RELATIVE TO CIRCLE 0
+  // virtualSegment[0] = new Segment(1.5, 0, 0);
+  // virtualSegment[0]->setRelativePosition(segment[0], 90);
+  // segment[1] = new Segment(19, 1525, 71);
+  // segment[1]->setRelativePosition(virtualSegment[0], 90);
 
-  circle = new Circle(6.27, 90, 144, 144);
-  circle->setPosition(40, 39.4 - 6.27);
+  // segment[2] = new Segment(23, 1760, 85);
+  // segment[2]->setRelativePosition(segment[0], 300);
+  // virtualSegment[1] = new Segment(1.75, 0, 0);
+  // virtualSegment[1]->setRelativePosition(segment[2], 120);
+  // segment[3] = new Segment(22, 2206, 82);
+  // segment[3]->setRelativePosition(virtualSegment[1], 60);
 
-  minX = max(minX, vertical1->getMinXLED());
-  minX = max(minX, circle->getMinXLED());
-  maxX = max(maxX, vertical1->getMaxXLED());
-  maxX = max(maxX, circle->getMaxXLED());
+  // segment[4] = new Segment(24, 1845, 88);
+  // segment[4]->setRelativePosition(segment[2], 60);
+  // virtualSegment[2] = new Segment(1.75, 0, 0);
+  // virtualSegment[2]->setRelativePosition(segment[4], 120);
+  // segment[5] = new Segment(22, 2124, 82);
+  // segment[5]->setRelativePosition(virtualSegment[2], 60);
+
+  // segment[6] = new Segment(24, 1933, 86);
+  // segment[6]->setRelativePosition(segment[4], 60);
+  // virtualSegment[3] = new Segment(1.75, 0, 0);
+  // virtualSegment[3]->setRelativePosition(segment[6], 120);
+  // segment[7] = new Segment(22, 2042, 81);
+  // segment[7]->setRelativePosition(virtualSegment[3], 60);
+
+  // segment[8] = new Segment(18.5, 417, 67);
+  // segment[8]->setRelativePosition(segment[6], 282);
+  // virtualSegment[4] = new Segment(2, 0, 0);
+  // virtualSegment[4]->setRelativePosition(segment[6], 0);
+  // segment[9] = new Segment(17, 10, 62);
+  // segment[9]->setRelativePosition(virtualSegment[4], 282);
+
+  // segment[10] = new Segment(22.25, 2288, 82);
+  // segment[10]->setRelativePosition(segment[3], 300);
+  // virtualSegment[5] = new Segment(1.75, 0, 0);
+  // virtualSegment[5]->setRelativePosition(segment[10], 300);
+  // segment[11] = new Segment(24, 1440, 82);
+  // segment[11]->setRelativePosition(virtualSegment[5], 240);
+
+  // segment[12] = new Segment(22.25, 2370, 82);
+  // segment[12]->setRelativePosition(segment[10], 300);
+  // virtualSegment[6] = new Segment(1.75, 0, 0);
+  // virtualSegment[6]->setRelativePosition(segment[12], 120);
+  // segment[13] = new Segment(24, 1353, 86);
+  // segment[13]->setRelativePosition(virtualSegment[6], 60);
+
+  // // VIRTUAL TOUR THROUGH THE BOTTOM CIRCLE
+  // virtualSegment[7] = new Segment(4.75, 0, 0);
+  // virtualSegment[7]->setRelativePosition(segment[8], 0);
+  // virtualSegment[8] = new Segment(4.75, 0, 0);
+  // virtualSegment[8]->setRelativePosition(virtualSegment[7], 72);
+  // segment[14] = new Segment(19, 544, 70);
+  // segment[14]->setRelativePosition(virtualSegment[8], 0);
+  // virtualSegment[9] = new Segment(1.75, 0, 0);
+  // virtualSegment[9]->setRelativePosition(segment[14], 144);
+  // segment[15] = new Segment(17.5, 544, 70);
+  // segment[15]->setRelativePosition(virtualSegment[9], 36);
+  
+  // // SETUP SEGMENTS
+  circle[0] = new Circle(4.5, 324, 1597, 91, 1);
+  circle[0]->setPosition(10, 100);
+  segment[0] = new Segment(23, 1689, 69);
+  segment[0]->setPosition(14, 100, 326, false);
+  segment[1] = new Segment(23, 1525, 72);
+  segment[1]->setRelativePosition(segment[0], 180, false);
+
+  // HEXAGON (INSIDE FIRST / OUTSIDE SECOND)
+  segment[2] = new Segment(23, 2288, 84);
+  segment[2]->setRelativePosition(segment[0], 60, false);
+  segment[3] = new Segment(23, 1528 - 89, 85);
+  segment[3]->setRelativePosition(segment[2], 180, false);
+
+  segment[4] = new Segment(23, 2288 + 84, 82);
+  segment[4]->setRelativePosition(segment[2], 300, false);
+  segment[5] = new Segment(23, 1353, 87);
+  segment[5]->setRelativePosition(segment[4], 180, false);
+
+  // SPLIT INNER SIDE
+  segment[6] = new Segment(21, 2288 + 84 + 82, 82);
+  segment[6]->setRelativePosition(segment[4], 300, false);
+  segment[7] = new Segment(2, 2034, 8);
+  segment[7]->setRelativePosition(segment[6], 0, false);
+
+  segment[8] = new Segment(23, 2042, 82);
+  segment[8]->setRelativePosition(segment[7], 300, false);
+  segment[9] = new Segment(23, 1933, 87);
+  segment[9]->setRelativePosition(segment[8], 180, false);
+
+  segment[10] = new Segment(23, 2124, 82);
+  segment[10]->setRelativePosition(segment[8], 300, false);
+  segment[11] = new Segment(23, 1846, 88);
+  segment[11]->setRelativePosition(segment[10], 180, false);
+
+  segment[12] = new Segment(23, 2206, 82);
+  segment[12]->setRelativePosition(segment[10], 300, false);
+  segment[13] = new Segment(23, 1758, 88);
+  segment[13]->setRelativePosition(segment[12], 180, false);
+
+
+  // PENTAGON - STARTS WITH SPLIT MIDDLE
+  segment[14] = new Segment(21, 330, 82);
+  segment[14]->setRelativePosition(segment[4], 300, false);
+  segment[15] = new Segment(2, 0, 8);
+  segment[15]->setRelativePosition(segment[14], 0, false);
+
+  segment[16] = new Segment(17.5, 8, 66);
+  segment[16]->setRelativePosition(segment[14], 72, false);
+  segment[17] = new Segment(17.5, 417, 67);
+  segment[17]->setRelativePosition(segment[16], 180, true);
+
+  // VIRTUAL EXTENTION THROUGH CIRCLE
+  virtualSegment[0] = new Segment(4.5, 0, 0);
+  virtualSegment[0]->setRelativePosition(segment[16], 0, false);
+
+  // CIRCLE
+  circle[2] = new Circle(4.5, 162, 74, 30, 0.2);
+  circle[2]->setPosition(virtualSegment[0]->getEndX(), virtualSegment[0]->getEndY());
+  circle[3] = new Circle(4.5, 162, 484, 58, 0.8);
+  circle[3]->setPosition(virtualSegment[0]->getEndX(), virtualSegment[0]->getEndY());
+
+  // VIRTUAL EXTENTION THROUGH CIRCLE
+  virtualSegment[1] = new Segment(4.5, 0, 0);
+  virtualSegment[1]->setRelativePosition(virtualSegment[0], 72, false);
+
+  segment[18] = new Segment(17.5, 104, 65);
+  segment[18]->setRelativePosition(virtualSegment[1], 0, false);
+  segment[19] = new Segment(17.5, 544, 69);
+  segment[19]->setRelativePosition(segment[18], 180, true);
+
+  segment[20] = new Segment(23, 169, 81);
+  segment[20]->setRelativePosition(segment[18], 72, false);
+  segment[21] = new Segment(23, 614, 83);
+  segment[21]->setRelativePosition(segment[20], 180, true);
+
+  segment[22] = new Segment(23, 250, 81);
+  segment[22]->setRelativePosition(segment[20], 72, false);
+  segment[23] = new Segment(23, 1268, 86);
+  segment[23]->setRelativePosition(segment[22], 180, true);
+
+  // RIGHT ARM
+  segment[24] = new Segment(23, 697, 83);
+  segment[24]->setRelativePosition(segment[20], 288, false);
+  segment[25] = new Segment(23, 1180, 88);
+  segment[25]->setRelativePosition(segment[24], 180, false);
+
+  segment[26] = new Segment(23, 780, 85);
+  segment[26]->setRelativePosition(segment[24], 288, false);
+  segment[27] = new Segment(23, 1096, 87);
+  segment[27]->setRelativePosition(segment[26], 180, false);
+
+  segment[28] = new Segment(18.5, 865, 71);
+  segment[28]->setRelativePosition(segment[26], 72, false);
+  segment[29] = new Segment(18.5, 1028, 68);
+  segment[29]->setRelativePosition(segment[28], 180, false);
+
+  virtualSegment[2] = new Segment(4.5, 0, 0);
+  virtualSegment[2]->setRelativePosition(segment[28], 0, false);
+
+  circle[1] = new Circle(4.5, 252, 865 + 71, 91, 1);
+  circle[1]->setPosition(virtualSegment[2]->getEndX(), virtualSegment[2]->getEndY());
+
+
+  delay(3000);
+  for (uint_fast16_t i = 0; i < NUM_SEGMENTS; i++) {
+    Serial.print(i);
+    Serial.print("\t");
+    Serial.print(segment[i]->getStartX());
+    Serial.print(", ");
+    Serial.print(segment[i]->getStartY());
+    Serial.print("\t");
+    Serial.print(segment[i]->getEndX());
+    Serial.print(", ");
+    Serial.print(segment[i]->getEndY());
+    Serial.println("");
+  }
+
+
+  // minX = min(minX, vertical1->getMinXLED());
+  // minX = min(minX, circle[0]->getMinXLED());
+  // maxX = max(maxX, vertical1->getMaxXLED());
+  // maxX = max(maxX, circle[0]->getMaxXLED());
 
   // FOUR SECOND ALL-GREEN ALL-CLEAR
   for (uint_fast16_t i = 0; i < NUM_LEDS; i++) {
     leds[i] = CHSV(90, 255, 60);
   }
   FastLED.show();
-  delay(4000);
+  delay(300);
+
+  Serial.print(minX);
+  Serial.print("\t");
+  Serial.println(maxX);
 
   // TURN ALL OFF
   for (uint_fast16_t i = 0; i < NUM_LEDS; i++) {
@@ -149,16 +331,17 @@ void setup() {
 void loop() {
   loops++;
   currentTime = millis();
+  uint_fast16_t modeRead = touchRead(CONTROL_MODE);
+
   if (currentTime > logTime + 10000) {
     logTime = currentTime;
+    // Serial.println(modeRead);
 
     Serial.print("Frame Rate: ");
     Serial.println(loops / ((currentTime - setupTime) / 1000));
   }
 
-  noteDetectionLoop();
-
-  uint_fast16_t modeRead = touchRead(CONTROL_MODE);
+  // uint_fast16_t modeRead = touchRead(CONTROL_MODE);
   if (modeRead > 1000) {
     currentMode = (currentMode + 1) % MODES;
   }
@@ -171,6 +354,8 @@ void loop() {
     case MODE_SHAPE: displayShape();
       break;
     case MODE_SPECTRUM: displaySpectrum();
+      break;
+    case MODE_GRID: displayGrid();
       break;
   }
 
@@ -190,22 +375,32 @@ void loop() {
 }
 
 CHSV white(int_fast16_t x, int_fast16_t y) {
-  return CHSV(0, 0, 100);
+  return CHSV(0, 0, 64);
 }
 
 CHSV rainbow(int_fast16_t x, int_fast16_t y) {
-  if ((int_fast16_t)(x/1.9 + y/1.9) % 256 == hueOffset) {
-    return CHSV(0, 0, 255);
+  // if ((int_fast16_t)(x) % 256 == hueOffset) {
+  //   return CHSV(0, 0, VALUE);
+  // }
+
+  return CHSV((x + y + hueOffset) % 256 , SATURATION, VALUE);
+}
+
+CHSV grid(int_fast16_t x, int_fast16_t y) {
+  if (x % 20 == 0 || y % 20 == 0) {
+    return CHSV(0, 0, VALUE);
   }
 
-  return CHSV((hueOffset + y) % 256, SATURATION, VALUE);
+  return rainbow(x, y);
+}
+
+void displayGrid() {
+  displayAll(leds, grid);
+  hueOffset = (currentTime / 20) % 256;
 }
 
 void displayShape() {
-  vertical1->display(leds, rainbow);
-  // diagonal1->display(leds, rainbow);
-  circle->display(leds, rainbow);
-
+  displayAll(leds, rainbow);
   hueOffset = (currentTime / 20) % 256;
 }
 
@@ -216,36 +411,44 @@ float peak = 2000;
 CHSV noteIntensity(int_fast16_t x, int_fast16_t y) {
   uint_fast16_t note = ((float)(x - minX) / (float)(maxX - minX)) * noteCount;
 
-  if (magnitudes[note] < threshold) {
+  if (noteMagnatudes[note] < threshold) {
     return CHSV(0, 0, 0);
   }
 
-  uint_fast16_t value = min(((magnitudes[note] - threshold) / (peak - threshold)) * 255, 255);
-  return CHSV(((y * 3) + (currentTime / 20)) % 256, SATURATION, value);                         // 3 = more spread of color top to bottom
+  uint_fast16_t value = min(((noteMagnatudes[note] - threshold) / (peak - threshold)) * 255, 255);
+  return CHSV(((x * 3) + (currentTime / 20)) % 256, SATURATION, value);                         // 3 = more spread of color top to bottom
                                                                                                 // time / 20 to slow down hue change
 }
 
 void displaySpectrum() {
+  noteDetectionLoop();
   float sorted[noteCount];
-  memcpy(sorted, magnitudes, sizeof(magnitudes[0]) * noteCount);
+  memcpy(sorted, noteMagnatudes, sizeof(noteMagnatudes[0]) * noteCount);
   std::sort(sorted, sorted+sizeof(sorted)/sizeof(sorted[0]));
 
-  float cutoffMagnitude = sorted[(uint_fast16_t)(0.15 * noteCount)];  // 0.15% of LEDs should be lit on average
+  float cutoffMagnitude = sorted[(uint_fast16_t)(0.85 * noteCount)];  // 0.15% of LEDs should be lit on average
   float peakMagnitude = sorted[noteCount - 2];
   threshold = (threshold * (0.998)) + (cutoffMagnitude/500.0);
   peak = (peak * (0.998)) + (peakMagnitude/500.0);
 
-  vertical1->display(leds, noteIntensity);
-  circle->display(leds, noteIntensity);
+  displayAll(leds, noteIntensity);
 }
 
 void displayChase() {
   uint8_t hue = hueOffset;
+
   for (uint_fast16_t i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CHSV(hue, SATURATION, VALUE);
-    hue = (hue + 1) % 256;
+    uint_fast8_t r = random(256);
+    if (r == 0) {
+      leds[i] = CHSV(0, 0, 255);
+    } else if (r == 1) {
+      leds[i] = CHSV(0, 0, 0);
+    } else {
+      hue = (hue + 1) % 256;
+      leds[i] = CHSV(hue, SATURATION, VALUE);
+    }
   }
-  hueOffset = (hueOffset + 1) % 256;
+  hueOffset = (hueOffset + 7) % 256;
 }
 
 void displayCount() {
@@ -255,19 +458,31 @@ void displayCount() {
     hue = (hue % 2) * 64;
     leds[i] = CHSV(hue, SATURATION, VALUE);
 
-    if (i % 100 == 0) {
-      leds[i] = CHSV(128, SATURATION, VALUE);
-    }
+    // if (i % 100 == 0) {
+    //   leds[i] = CHSV(128, SATURATION, VALUE);
+    // }
 
     // ANDERS: copy pasting these lines will allow you to set any pixel to designated hue
 
-    hue = 192;
-    leds[55] = CHSV(hue, 255, 100);  // THIS SETS PIXEL 55 TO hue 192
-    leds[1000] = CHSV(222, 255, 100);  // THIS SETS PIXEL 1000 TO hue 222, OVERRIDING THE 100th PIXEL COLOR
-    leds[2000] = CHSV(92, 255, 100);  // THIS SETS PIXEL 2000 TO hue 92, OVERRIDING THE 100th PIXEL COLOR
+    // leds[1596] = CHSV(0, 0, 255);  // THIS SETS PIXEL 2000 TO hue 92, OVERRIDING THE 100th PIXEL COLOR
+    // left circle[0] start
+    leds[1597] = CHSV(0, 0, 255);  // THIS SETS PIXEL 2000 TO hue 92, OVERRIDING THE 100th PIXEL COLOR
+    // left circle[0] end
+    leds[1687] = CHSV(0, 0, 255);  // THIS SETS PIXEL 2000 TO hue 92, OVERRIDING THE 100th PIXEL COLOR
   }
 }
 
+
+void displayAll(CRGB* leds, CHSV (*getColor)(int_fast16_t x, int_fast16_t y)) {
+  for (uint_fast16_t i = 0; i < NUM_CIRCLES; i++) {
+    circle[i]->display(leds, getColor);
+  }
+
+  for (uint_fast16_t i = 0; i < NUM_SEGMENTS; i++) {
+    segment[i]->display(leds, getColor);
+  }
+
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // NOTE DETECTION
 ////////////////////////////////////////////////////////////////////////////////////////////////

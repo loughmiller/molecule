@@ -8,20 +8,36 @@ Segment::Segment(float length,
   this->ledCount = ledCount;
 }
 
-void Segment::setPosition(float startX, float startY, int_fast16_t absoluteAngle) {
+void Segment::setPosition(float startX, float startY, int_fast16_t absoluteAngle, bool reverse) {
   this->startX = startX;
   this->startY = startY;
   this->absoluteAngleRadians = absoluteAngle * RADIANS_PER_DEGREE;
   this->endX = calcEndX();
   this->endY = calcEndY();
+
+  if (reverse) {
+    this->startX = this->endX;
+    this->startY = this->endY;
+    this->absoluteAngleRadians = this->absoluteAngleRadians + (180 * RADIANS_PER_DEGREE);
+    this->endX = calcEndX();
+    this->endY = calcEndY();
+  }
 }
 
-void Segment::setRelativePosition(Segment *parent, int_fast16_t relativeAngle) {
+void Segment::setRelativePosition(Segment *parent, int_fast16_t relativeAngle, bool reverse) {
   this->startX = parent->getEndX();
   this->startY = parent->getEndY();
   this->absoluteAngleRadians = parent->getAbsoluteAngleRadians() + (relativeAngle * RADIANS_PER_DEGREE);
   this->endX = calcEndX();
   this->endY = calcEndY();
+
+  if (reverse) {
+    this->startX = this->endX;
+    this->startY = this->endY;
+    this->absoluteAngleRadians = this->absoluteAngleRadians + (180 * RADIANS_PER_DEGREE);
+    this->endX = calcEndX();
+    this->endY = calcEndY();
+  }
 }
 
 void Segment::display(CRGB* leds, CHSV (*getColor)(int_fast16_t x, int_fast16_t y)) {
